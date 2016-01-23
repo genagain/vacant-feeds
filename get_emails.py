@@ -8,6 +8,7 @@ from oauth2client import client
 from oauth2client import tools
 import ipdb
 import base64
+from bs4 import BeautifulSoup
 
 try:
     import argparse
@@ -58,14 +59,20 @@ def main():
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('gmail', 'v1', http=http)
 
-
     messages_list = service.users().messages().list(userId='me').execute()
     messID = str(messages_list['messages'][0]['id'])
     userID = "me"
     test_email = service.users().messages().get(userId=userID,id=messID).execute()
-    test_data = test_email['payload']['parts'][1]['body']['data']
-    decoded=base64.urlsafe_b64decode(test_data.encode('ASCII'))
-    # ipdb.set_trace()
+    email_content = ""
+    parts = test_email['payload']['parts']
+    for part in parts:
+      test_data = part['body']['data']
+      decoded=base64.urlsafe_b64decode(test_data.encode('ASCII'))
+      email_content += decoded
+
+    soup = BeautifulSoup(email_content,'html.parser')
+    for link in soup.find_all('a'):
+          print(link.get('href'))
 
 if __name__ == '__main__':
     main()
