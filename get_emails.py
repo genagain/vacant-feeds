@@ -9,6 +9,7 @@ from oauth2client import tools
 import ipdb
 import base64
 from bs4 import BeautifulSoup
+import requests
 
 try:
     import argparse
@@ -71,8 +72,16 @@ def main():
       email_content += decoded
 
     soup = BeautifulSoup(email_content,'html.parser')
+    unique_content = []
+    unique_links = []
     for link in soup.find_all('a'):
-          print(link.get('href'))
+      url = link.get('href')
+      response = requests.get(url)
+      if response.__dict__['_content'] in unique_content:
+        pass
+      else:
+        unique_content.append(response.__dict__['_content'])
+        unique_links.append(response.url)
 
 if __name__ == '__main__':
     main()
