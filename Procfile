@@ -1,1 +1,1 @@
-web: gunicorn vacant-feeds.wsgi
+web: gunicorn dry-tor-74170.wsgi
