@@ -12,6 +12,9 @@ from bs4 import BeautifulSoup
 import requests
 from datetime import datetime
 import PyRSS2Gen
+import unirest
+from django.utils.encoding import smart_str, smart_unicode
+import os
 
 try:
     import argparse
@@ -22,6 +25,9 @@ except ImportError:
 SCOPES = 'https://www.googleapis.com/auth/gmail.readonly'
 CLIENT_SECRET_FILE = 'client_secret.json'
 APPLICATION_NAME = 'Vacant Feeds'
+f = open('article_api_key.txt','r')
+ARTICLE_API_KEY = f.read()
+ARTICLE_API_KEY = ARTICLE_API_KEY.rstrip()
 
 
 def get_credentials():
@@ -56,7 +62,6 @@ def relevant(link):
     irrelevant = ["twitter", "facebook", "login", "unsubscribe"]
     check = []
     for word in irrelevant:
-      # if "facebook" in link:
       if word in link:
         check.append(False)
       else:
@@ -75,7 +80,8 @@ def main():
     service = discovery.build('gmail', 'v1', http=http)
 
     messages_list = service.users().messages().list(userId='me').execute()
-    messID = str(messages_list['messages'][1]['id'])
+    # messID = str(messages_list['messages'][1]['id'])
+    messID = '1526ed3c3408d44c'
     userID = "me"
     test_email = service.users().messages().get(userId=userID,id=messID).execute()
     email_content = ""
@@ -98,15 +104,34 @@ def main():
     
     entries = []
 
-    rss = PyRSSGEN.RSS2(
+    for link in unique_links:
+      article_url = link.replace(":", "%3A", 10)
+      article_url = article_url.replace("/", "%2F", 10)
+      unirest.timeout(20)
+      response = unirest.get("https://joanfihu-article-analysis-v1.p.mashape.com/link?entity_description=False&link="+article_url,
+            headers={
+                      "X-Mashape-Key":ARTICLE_API_KEY,
+                      "Accept": "application/json"
+                    }
+            )
+
+      title = smart_str(response.__dict__['_body']['title'])
+      guid = PyRSS2Gen.Guid(link)
+      description = smart_str(' '.join(response.__dict__['_body']['summary']))
+      rss_item = PyRSS2Gen.RSSItem(title=title, link=link, description=description, guid=guid, pubDate=datetime.now())
+      entries.append(rss_item)
+
+    os.remove('credo-action.xml')
+    rss = PyRSS2Gen.RSS2(
         title = "Credo Action's Feed",
         link = "http://credoaction.com/news/home.html",
         description = "This is a test feed base on the Credo Action email newsletter",
-        guid = PyRSS2Gen.Guid("http://credoaction.com/new/home.html"),
+        # guid = PyRSS2Gen.Guid("http://credoaction.com/new/home.html"),
         pubDate = datetime.now(),
 
         items = entries
         )
+    rss.write_xml(open("credo-action.xml", "w"))
 
 if __name__ == '__main__':
     main()
