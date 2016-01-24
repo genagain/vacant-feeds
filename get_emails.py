@@ -10,6 +10,8 @@ import ipdb
 import base64
 from bs4 import BeautifulSoup
 import requests
+from datetime import datetime
+import PyRSS2Gen
 
 try:
     import argparse
@@ -93,6 +95,18 @@ def main():
       if response.__dict__['_content'] not in unique_content and relevant(str(response.url)):
         unique_content.append(response.__dict__['_content'])
         unique_links.append(str(response.url))
+    
+    entries = []
+
+    rss = PyRSSGEN.RSS2(
+        title = "Credo Action's Feed",
+        link = "http://credoaction.com/news/home.html",
+        description = "This is a test feed base on the Credo Action email newsletter",
+        guid = PyRSS2Gen.Guid("http://credoaction.com/new/home.html"),
+        pubDate = datetime.now(),
+
+        items = entries
+        )
 
 if __name__ == '__main__':
     main()
