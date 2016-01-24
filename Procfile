@@ -1,1 +1,1 @@
-web: gunicorn glacial-waters-61660.wsgi
+web: gunicorn glacial-waters-61660.wsgi:application
