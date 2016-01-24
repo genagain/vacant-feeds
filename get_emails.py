@@ -50,6 +50,18 @@ def get_credentials():
         print('Storing credentials to ' + credential_path)
     return credentials
 
+def relevant(link):
+    irrelevant = ["twitter", "facebook", "login", "unsubscribe"]
+    check = []
+    for word in irrelevant:
+      # if "facebook" in link:
+      if word in link:
+        check.append(False)
+      else:
+        check.append(True)
+    
+    return all(c == True for c in check)
+
 def main():
     """Shows basic usage of the Gmail API.
 
@@ -61,7 +73,7 @@ def main():
     service = discovery.build('gmail', 'v1', http=http)
 
     messages_list = service.users().messages().list(userId='me').execute()
-    messID = str(messages_list['messages'][0]['id'])
+    messID = str(messages_list['messages'][1]['id'])
     userID = "me"
     test_email = service.users().messages().get(userId=userID,id=messID).execute()
     email_content = ""
@@ -74,14 +86,13 @@ def main():
     soup = BeautifulSoup(email_content,'html.parser')
     unique_content = []
     unique_links = []
+
     for link in soup.find_all('a'):
       url = link.get('href')
       response = requests.get(url)
-      if response.__dict__['_content'] in unique_content:
-        pass
-      else:
+      if response.__dict__['_content'] not in unique_content and relevant(str(response.url)):
         unique_content.append(response.__dict__['_content'])
-        unique_links.append(response.url)
+        unique_links.append(str(response.url))
 
 if __name__ == '__main__':
     main()
