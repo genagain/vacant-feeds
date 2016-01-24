@@ -52,7 +52,7 @@ TEMPLATE_DEBUG = False
     # 'django.middleware.security.SecurityMiddleware',
 # )
 
-# ROOT_URLCONF = 'gettingstarted.urls'
+ROOT_URLCONF = 'vacantfeeds.urls'
 
 # TEMPLATES = [
     # {
