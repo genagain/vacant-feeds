@@ -121,7 +121,7 @@ def main():
       rss_item = PyRSS2Gen.RSSItem(title=title, link=link, description=description, guid=guid, pubDate=datetime.now())
       entries.append(rss_item)
 
-    os.remove('credo-action.xml')
+    os.remove('feed')
     rss = PyRSS2Gen.RSS2(
         title = "Credo Action's Feed",
         link = "http://credoaction.com/news/home.html",
@@ -131,7 +131,7 @@ def main():
 
         items = entries
         )
-    rss.write_xml(open("credo-action.xml", "w"))
+    rss.write_xml(open("feed", "w"))
 
 if __name__ == '__main__':
     main()
